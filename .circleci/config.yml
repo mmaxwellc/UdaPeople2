@@ -1,40 +1,5 @@
 version: 2.1
 
-commands:
-  destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      workflow_id:
-        type: string
-    steps:
-      - run:
-          name: Destroy environments
-          when: on_fail
-          command: |
-            if aws s3 ls | grep udapeople-<<parameters.workflow_id>>; then
-              aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
-            fi
-            aws cloudformation delete-stack --stack-name frontend-<<parameters.workflow_id>>
-            aws cloudformation delete-stack --stack-name backend-<<parameters.workflow_id>>
-      - revert-migrations:
-          workflow_id: <<parameters.workflow_id>>
-
-  revert-migrations:
-    description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-      workflow_id:
-        type: string
-    steps:
-      - run:
-          name: Revert migrations
-          when: on_fail
-          command: |
-            status=$(curl -H "token: <<parameters.workflow_id>>" \
-              --request GET https://api.memstash.io/values/migration-<<parameters.workflow_id>>)
-            echo $status
-            if [[ "${status}" == 1 ]]; then
-              npm run migrations:revert
-            fi
 jobs:
   build-frontend:
     docker:
